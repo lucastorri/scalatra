@@ -1,13 +1,12 @@
 import sbt._
 
 import scala.xml._
-import com.rossabaker.sbt.gpg._
+import maven.MavenDependencies
 
 class ScalatraProject(info: ProjectInfo) 
-  extends ParentProject(info) {
-//  with GpgPlugin
-//  with ChecksumPlugin
-//{
+  extends ParentProject(info) 
+  with MavenDependencies
+{
   override def shouldCheckOutputDirectories = false
 
   val jettyGroupId = "org.eclipse.jetty"
@@ -17,20 +16,18 @@ class ScalatraProject(info: ProjectInfo)
   trait UnpublishedProject
     extends BasicManagedProject
   {
-    override def publishLocalAction = task { None }
-    override def deliverLocalAction = task { None }
-    override def publishAction = task { None }
-    override def deliverAction = task { None }
+    override lazy val publishLocal = task { None }
+    override lazy val deliverLocal = task { None }
+    override lazy val publish = task { None }
+    override lazy val deliver = task { None }
     override def artifacts = Set.empty
   }
 
   trait ScalatraSubProject 
     extends BasicScalaProject 
     with BasicPackagePaths
+    with MavenDependencies
   {
-//    with GpgPlugin
-//    with ChecksumPlugin
-//  {
     def description: String
 
     val servletApi = "javax.servlet" % "servlet-api" % "2.5" % "provided"
@@ -51,7 +48,8 @@ class ScalatraProject(info: ProjectInfo)
     lazy val sourceArtifact = Artifact.sources(artifactID)
     lazy val docsArtifact = Artifact.javadoc(artifactID)
     override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageDocs, packageSrc)
-    override def managedStyle = ManagedStyle.Maven
+    // Doesn't play nicely with MavenDependenices
+    // override def managedStyle = ManagedStyle.Maven
   }
 
   // Thanks, Mark: http://groups.google.com/group/simple-build-tool/msg/c32741357ac58f18
