@@ -1,11 +1,13 @@
 import sbt._
 
 import scala.xml._
+import com.rossabaker.sbt.gpg._
 import maven.MavenDependencies
 
 class ScalatraProject(info: ProjectInfo) 
   extends ParentProject(info) 
   with MavenDependencies
+  with GpgPlugin
 {
   override def shouldCheckOutputDirectories = false
 
@@ -27,6 +29,7 @@ class ScalatraProject(info: ProjectInfo)
     extends BasicScalaProject 
     with BasicPackagePaths
     with MavenDependencies
+    with GpgPlugin
   {
     def description: String
 
@@ -50,6 +53,9 @@ class ScalatraProject(info: ProjectInfo)
     override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageDocs, packageSrc)
     // Doesn't play nicely with MavenDependenices
     // override def managedStyle = ManagedStyle.Maven
+
+    // Hmm... MavenDependencies can't find this in the outer class?
+    val publishTo = ScalatraProject.this.publishTo
   }
 
   // Thanks, Mark: http://groups.google.com/group/simple-build-tool/msg/c32741357ac58f18
