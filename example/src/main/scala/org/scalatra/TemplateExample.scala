@@ -34,6 +34,7 @@ class TemplateExample extends ScalatraServlet with UrlSupport /*with FileUploadS
           <a href={url("/login")}>login</a>
           <a href={url("/logout")}>logout</a>
           <a href={url("/filter-example")}>filter demo</a>
+          <a href={url("/chat")}>chat demo</a>
         </body>
       </html>
     }
@@ -88,6 +89,23 @@ class TemplateExample extends ScalatraServlet with UrlSupport /*with FileUploadS
         <pre>Route: /login</pre>
         )
     }
+  }
+
+  get("/echoclient") {
+    Template.page("Scalatra: Echo Server Client Example",
+      <pre>
+        <script type="text/javascript" src="/js/json.js" ></script>
+        <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+        {"var socket = new io.Socket(null, { port: 8080, rememberTransport: false });"}
+        {"""socket.on("message", function(messageType, data) { console.log(data) });"""}
+        {"socket.connect();"}
+        {"""socket.send("hello");"""}
+      </pre>
+    )
+  }
+
+  get("/chat") {
+    renderTemplate("chat.ssp")
   }
 
   post("/login") {

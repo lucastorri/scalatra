@@ -37,6 +37,10 @@ Scalatra is a tiny, [Sinatra](http://www.sinatrarb.com/)-like web framework for 
 
   7. Start hacking on `src/main/scala/MyScalatraFilter.scala`.
 
+Note: if you keep getting frequent OutOfMemory errors from `sbt` you can try changing its script as described in [this document](http://www.assembla.com/wiki/show/liftweb/Using_SBT) so that it executes this command line:
+
+     java -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256m -Xmx512M -Xss2M -jar `dirname $0`/sbt-launch.jar "$@"
+
 ## Community
 
 ### Mailing list
@@ -108,6 +112,35 @@ The route matcher may also be a regular expression.  Capture groups are accessib
       multiParams("captures") # == Seq("oo", "ar") 
     }
 
+#### Path patterns in the REPL
+
+If you want to experiment with path patterns, it's very easy in the REPL.
+
+    scala> import org.scalatra.pattern._
+    import org.scalatra.pattern._
+
+    scala> val pattern = PathPatternParser.parseFrom("/foo/:bar")
+    pattern: PathPattern = PathPattern(^/foo/([^/?]+)$,List(bar))
+
+    scala> pattern("/y/x") // doesn't match 
+    res1: Option[MultiParams] = None
+
+    scala> pattern("/foo/x") // matches
+    res2: Option[MultiParams] = Some(Map(bar -> ListBuffer(x)))
+
+Obligatory scolding: the REPL is not a substitute for proper unit tests!
+
+#### Rails-like pattern matching
+
+By default, route patterns parsing is based on Sinatra.  Rails has a similar, but not identical, syntax, based on Rack::Mount's Strexp.  The path pattern parser is resolved implicitly, and may be overridden if you prefer an alternate syntax:
+
+    class RailsLikeRouting extends ScalatraFilter {
+      implicit override val string2RouteMatcher(path: String) =
+        RailsPathPatternParser(path)
+
+      get("/:file(.:ext)") { // matched Rails-style }
+    }
+
 ### Conditions
 
 Routes may include conditions.  A condition is any expression that returns Boolean.  Conditions are evaluated by-name each time the route matcher runs.
@@ -171,7 +204,7 @@ After filters are evaluated after each request, but before the action result is 
 
 ## Halting
 
-To immeidately stop a request within a filter or route:
+To immediately stop a request within a filter or route:
 
     halt()
 
@@ -263,7 +296,7 @@ Flash scope is available by mixing in `FlashMapSupport`, which provides a mutabl
 
 ## Templating with Scalate
 
-Scalatra provides optional support for <a href="http://scalate.org/">Scalate</a>, a Scala template engine.  
+Scalatra provides optional support for [Scalate](http://scalate.fusesource.org/), a Scala template engine.  
 
 1. Depend on scalatra-scalate.jar and a [slf4j binding](http://www.slf4j.org/manual.html#binding).  In your SBT build:
 
@@ -320,6 +353,69 @@ Scalatra provides optional support for file uploads with <a href="http://commons
         post("/") {
           processFile(fileParams("file"))
         }
+
+## WebSocket and Comet support through Socket.IO
+
+Scalatra provides optional support for websockets and comet through [socket.io](http://socket.io). We depend on [the socketio-java project](http://code.google.com/p/socketio-java) to provide this support.
+
+1. Depend on the scalatra-socketio.jar. In your SBT build:
+
+       val scalatraSocketIO = "org.scalatra" % "scalatra-socketio" % scalatraVersion
+
+2. SocketIO mimics a socket connection so it's easiest if you just create a socketio servlet at /socket.io/*
+
+       import org.scalatra.ScalatraServlet
+       import org.scalatra.socketio.SocketIOSupport
+
+       class MySocketIOServlet extends ScalatraServlet with SocketIOSupport {
+         // ...
+       }
+
+3. Setup the callbacks
+
+       socketio { socket =>
+
+         socket.onConnect { connection =>
+           // Do stuff on connection
+         }
+
+         socket.onMessage { (connection, frameType, message) =>
+           // Receive a message
+           // use `connection.send("string")` to send a message
+           // use `connection.broadcast("to send")` to send a message to all connected clients except the current one
+           // use `connection.disconnect` to disconnect the client.
+         }
+
+         socket.onDisconnect { (connection, reason, message) =>
+           // Do stuff on disconnection
+         }
+       }
+
+4. Add the necessary entries to web.xml
+
+       <servlet>
+         <servlet-name>SocketIOServlet</servlet-name>
+         <servlet-class>com.example.SocketIOServlet</servlet-class>
+         <init-param>
+           <param-name>flashPolicyServerHost</param-name>
+           <param-value>localhost</param-value>
+         </init-param>
+         <init-param>
+           <param-name>flashPolicyServerPort</param-name>
+           <param-value>843</param-value>
+         </init-param>
+         <init-param>
+           <param-name>flashPolicyDomain</param-name>
+           <param-value>localhost</param-value>
+         </init-param>
+         <init-param>
+           <param-name>flashPolicyPorts</param-name>
+           <param-value>8080</param-value>
+         </init-param>
+      </servlet>  
+
+              
+When you want to use websockets with jetty the sbt build tool gets in the way and that makes it look like the websocket stuff isn't working. If you deploy the war to a jetty distribution everything should work as expected.
 
 ## Testing Your Scalatra Applications
 
@@ -435,6 +531,12 @@ Scalatra was renamed from Step to Scalatra to avoid a naming conflict with (an u
 1. The package has changed from `com.thinkminimo.step` to `org.scalatra`.
 1. The `Step` class has been renamed to `ScalatraServlet`.
 1. All other `Step*` classes have been renamed to `Scalatra*`.
+
+## Related Projects
+
+- [SSGI](http://github.com/scalatra/ssgi): Work in progress. Will provide an abstraction layer allowing a future version of Scalatra to run on web servers other than Servlet containers.
+
+- [Bowler](http://bowlerframework.org): A RESTful, multi-channel ready web framework in Scala with a functional flavour, built on top of Scalatra and [Scalate](http://scalate.fusesource.org/).
 
 ## Credits
 

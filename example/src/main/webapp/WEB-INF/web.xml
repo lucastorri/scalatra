@@ -12,7 +12,51 @@
         <servlet-name>BasicAuthExample</servlet-name>
         <servlet-class>org.scalatra.BasicAuthExample</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>SocketIOExample</servlet-name>
+        <servlet-class>org.scalatra.SocketIOExample</servlet-class>
+        <init-param>
+            <param-name>flashPolicyServerHost</param-name>
+            <param-value>localhost</param-value>
+        </init-param>
+        <init-param>
+            <param-name>flashPolicyServerPort</param-name>
+            <param-value>843</param-value>
+        </init-param>
+        <init-param>
+            <param-name>flashPolicyDomain</param-name>
+            <param-value>localhost</param-value>
+        </init-param>
+        <init-param>
+            <param-name>flashPolicyPorts</param-name>
+            <param-value>8080</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <servlet-name>ChatApplication</servlet-name>
+        <servlet-class>org.scalatra.ChatServlet</servlet-class>
+        <init-param>
+            <param-name>flashPolicyServerHost</param-name>
+            <param-value>localhost</param-value>
+        </init-param>
+        <init-param>
+            <param-name>flashPolicyServerPort</param-name>
+            <param-value>843</param-value>
+        </init-param>
+        <init-param>
+            <param-name>flashPolicyDomain</param-name>
+            <param-value>localhost</param-value>
+        </init-param>
+        <init-param>
+            <param-name>flashPolicyPorts</param-name>
+            <param-value>8080</param-value>
+        </init-param>
+    </servlet>
 
+  <servlet-mapping>
+      <servlet-name>ChatApplication</servlet-name>
+      <url-pattern>/socket.io/*</url-pattern>
+  </servlet-mapping>
   <servlet-mapping>
     <servlet-name>TemplateExample</servlet-name>
     <url-pattern>/*</url-pattern>
@@ -20,6 +64,10 @@
   <servlet-mapping>
     <servlet-name>BasicAuthExample</servlet-name>
     <url-pattern>/auth/*</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>SocketIOExample</servlet-name>
+    <url-pattern>/echoserver/*</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>default</servlet-name>

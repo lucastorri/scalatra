@@ -12,7 +12,7 @@ import javax.servlet.Filter
 /**
  * Provides a framework-agnostic way to test your Scalatra app.  You probably want to extend this with
  * either <code>org.scalatra.test.scalatest.ScalatraSuite</code> or
- * <code>org.scalatra.test.specs.ScalatraSpecification</code>. 
+ * <code>org.scalatra.test.specs.ScalatraSpecification</code>.
  */
 trait ScalatraTests {
   implicit def httpTesterToScalatraHttpTester(t: HttpTester) = new ScalatraHttpTester(t)
@@ -102,8 +102,18 @@ trait ScalatraTests {
   def post(uri: String, body: String = "", headers: Map[String, String] = Map.empty)(f: => Unit) =
     withResponse(httpRequest("POST", uri, Seq.empty, headers, body), f)
   // @todo support POST multipart/form-data for file uploads
-  // @todo def put
-  // @todo def delete
+
+  def put(uri: String, params: Iterable[(String, String)] = Seq.empty, headers: Map[String, String] = Map.empty)(f: => Unit) = {
+    withResponse(httpRequest("PUT", uri, params, headers), f)
+  }
+
+  def delete(uri: String, params: Iterable[(String, String)] = Seq.empty, headers: Map[String, String] = Map.empty)(f: => Unit) = {
+    withResponse(httpRequest("DELETE", uri, params, headers), f)
+  }
+
+  def options(uri: String, params: Iterable[(String, String)] = Seq.empty, headers: Map[String, String] = Map.empty)(f: => Unit) = {
+    withResponse(httpRequest("OPTIONS", uri, params, headers), f)
+  }
 
   def session(f: => Unit) = {
     _session.withValue(Map[String,String]()) {

@@ -96,11 +96,21 @@ class ScalatraProject(info: ProjectInfo)
     val description = "Supplies the optional Scalatra Scalate support"
   }
 
-  lazy val example = project("example", "scalatra-example", new ExampleProject(_), core, fileupload, scalate, auth)
+  lazy val socketio = project("socketio", "scalatra-socketio", new SocketIOProject(_), core)
+  class SocketIOProject(info: ProjectInfo) extends DefaultProject(info) with ScalatraSubProject with TestWithScalatraTest {
+    val websocket = jettyGroupId % "jetty-websocket" % jettyVersion % "provided"
+    val description = "Supplies optional SocketIO support for scalatra"
+  }
+
+  lazy val example = project("example", "scalatra-example", new ExampleProject(_), core, fileupload, scalate, auth, socketio)
   class ExampleProject(info: ProjectInfo) extends DefaultWebProject(info) with ScalatraSubProject with UnpublishedProject {
     val jetty7 = jettyGroupId % "jetty-webapp" % jettyVersion % "test"
-    val sfl4japi = "org.slf4j" % "slf4j-api" % slf4jVersion % "compile" 
+    val jetty7websocket = jettyGroupId % "jetty-websocket" % jettyVersion % "compile"
+    val sfl4japi = "org.slf4j" % "slf4j-api" % slf4jVersion % "compile"
     val sfl4jnop = "org.slf4j" % "slf4j-nop" % slf4jVersion % "runtime"
+
+    override def webappClasspath = super.webappClasspath +++ buildCompilerJar
+
     val description = "An example Scalatra application"
   }
 
